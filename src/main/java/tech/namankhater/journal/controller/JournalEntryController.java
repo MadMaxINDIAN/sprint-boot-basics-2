@@ -29,6 +29,11 @@ public class JournalEntryController {
         return journalEntryService.getAllEntries();
     }
 
+    @GetMapping("/entries/user/{userId}")
+    public List<JournalEntry> getEntriesByUserId(@PathVariable String userId) {
+        return journalEntryService.getEntriesByUserId(userId);
+    }
+
     @GetMapping("/entries/{id}")
     public ResponseEntity<JournalEntry> getEntryById(@PathVariable String id) {
         System.out.println("Fetching journal entry with ID: " + id);
@@ -41,11 +46,22 @@ public class JournalEntryController {
         return journalEntryService.saveEntry(entry);
     }
 
+    @PostMapping("/entries/user/{userName}")
+    public ResponseEntity<JournalEntry> createEntryForUser(@PathVariable String userName, @RequestBody JournalEntry entry) {
+        try {
+            JournalEntry savedEntry = journalEntryService.saveEntry(entry, userName);
+            return ResponseEntity.ok(savedEntry);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PutMapping("/entries/{id}")
     public ResponseEntity<JournalEntry> updateEntry(@PathVariable String id, @RequestBody JournalEntry entry) {
         Optional<JournalEntry> existingEntry = journalEntryService.getEntryById(id);
         if (existingEntry.isPresent()) {
             entry.setId(id);
+            entry.setUserId(existingEntry.get().getUserId()); // Preserve original userId
             return ResponseEntity.ok(journalEntryService.saveEntry(entry));
         }
         return ResponseEntity.notFound().build();
@@ -56,6 +72,14 @@ public class JournalEntryController {
         Optional<JournalEntry> existingEntry = journalEntryService.getEntryById(id);
         if (existingEntry.isPresent()) {
             journalEntryService.deleteEntry(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/entries/{id}/user/{userName}")
+    public ResponseEntity<Void> deleteEntryForUser(@PathVariable String id, @PathVariable String userName) {
+        if (journalEntryService.deleteEntry(id, userName)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();

@@ -1,21 +1,17 @@
 package tech.namankhater.journal.entity;
 
-import java.util.Date;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Document(collection = "journal_entries")
+@Document(collection = "users")
 @Getter
 @Setter
-public class JournalEntry {
+public class UserEntity {
     @Id
     private String id;
-    private String title;
-    private String content;
-    private Date createdAt;
-    private String userId;
+    private String userName;
+    private String password;
 }
